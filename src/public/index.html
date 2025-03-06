@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alith Twitter Agent</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      background-color: #1DA1F2;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      color: white !important;
+    }
+    .card {
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      background-color: #f1f8fe;
+      border-bottom: 1px solid #e3f2fd;
+      font-weight: bold;
+    }
+    .btn-primary {
+      background-color: #1DA1F2;
+      border-color: #1DA1F2;
+    }
+    .btn-primary:hover {
+      background-color: #0d8ecf;
+      border-color: #0d8ecf;
+    }
+    .tweet-card {
+      border-left: 4px solid #1DA1F2;
+    }
+    .tweet-timestamp {
+      color: #6c757d;
+      font-size: 0.85rem;
+    }
+    .settings-section {
+      margin-bottom: 30px;
+    }
+    .form-check-input:checked {
+      background-color: #1DA1F2;
+      border-color: #1DA1F2;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="#">
+        <i class="bi bi-robot"></i> Alith Twitter Agent
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="#dashboard" data-bs-toggle="tab">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#posts" data-bs-toggle="tab">Posts</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#schedule" data-bs-toggle="tab">Schedule</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#settings" data-bs-toggle="tab">Settings</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="tab-content">
+      <!-- Dashboard Tab -->
+      <div class="tab-pane fade show active" id="dashboard">
+        <div class="row">
+          <div class="col-md-8">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Agent Status</span>
+                <span id="agent-status" class="badge bg-success">Active</span>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <h5>Next Scheduled Posts</h5>
+                  <ul class="list-group" id="next-posts">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      Loading scheduled posts...
+                    </li>
+                  </ul>
+                </div>
+                <button id="post-now-btn" class="btn btn-primary">
+                  <i class="bi bi-send"></i> Post Now
+                </button>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <span>Recent Posts</span>
+              </div>
+              <div class="card-body">
+                <div id="recent-posts">
+                  <p>Loading recent posts...</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <span>Quick Settings</span>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">Posting Schedule</label>
+                  <select id="quick-schedule" class="form-select">
+                    <option value="0 */12 * * *">Twice daily</option>
+                    <option value="0 */8 * * *" selected>Three times daily</option>
+                    <option value="0 */6 * * *">Four times daily</option>
+                    <option value="0 */4 * * *">Six times daily</option>
+                    <option value="0 12 * * *">Once daily</option>
+                  </select>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label">Content Focus</label>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="focus-crypto" checked>
+                    <label class="form-check-label" for="focus-crypto">
+                      Crypto
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="focus-web3" checked>
+                    <label class="form-check-label" for="focus-web3">
+                      Web3
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="focus-politics" checked>
+                    <label class="form-check-label" for="focus-politics">
+                      Politics
+                    </label>
+                  </div>
+                </div>
+                
+                <button id="save-quick-settings" class="btn btn-primary">
+                  <i class="bi bi-save"></i> Save Settings
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Posts Tab -->
+      <div class="tab-pane fade" id="posts">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Post History</span>
+            <button id="refresh-posts" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+          </div>
+          <div class="card-body">
+            <div id="posts-history">
+              <p>Loading post history...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Schedule Tab -->
+      <div class="tab-pane fade" id="schedule">
+        <div class="card">
+          <div class="card-header">
+            <span>Posting Schedule</span>
+          </div>
+          <div class="card-body">
+            <div class="mb-4">
+              <h5>Current Schedule</h5>
+              <p id="current-schedule">Loading current schedule...</p>
+              <p>Next posts will occur at:</p>
+              <ul id="schedule-times" class="list-group mb-3">
+                <li class="list-group-item">Loading scheduled times...</li>
+              </ul>
+            </div>
+            
+            <div class="mb-4">
+              <h5>Preset Schedules</h5>
+              <div class="mb-3">
+                <select id="schedule-preset" class="form-select">
+                  <option value="0 */12 * * *">Twice daily</option>
+                  <option value="0 */8 * * *" selected>Three times daily</option>
+                  <option value="0 */6 * * *">Four times daily</option>
+                  <option value="0 */4 * * *">Six times daily</option>
+                  <option value="0 12 * * *">Once daily</option>
+                </select>
+              </div>
+              <button id="apply-preset" class="btn btn-primary">Apply Preset</button>
+            </div>
+            
+            <div>
+              <h5>Custom Schedule</h5>
+              <div class="mb-3">
+                <label for="custom-schedule" class="form-label">Cron Expression</label>
+                <input type="text" class="form-control" id="custom-schedule" placeholder="0 */8 * * *">
+                <div class="form-text">
+                  Use cron syntax: minute hour day-of-month month day-of-week
+                </div>
+              </div>
+              <button id="apply-custom" class="btn btn-primary">Apply Custom Schedule</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings Tab -->
+      <div class="tab-pane fade" id="settings">
+        <div class="card">
+          <div class="card-header">
+            <span>Agent Settings</span>
+          </div>
+          <div class="card-body">
+            <div class="settings-section">
+              <h5>Content Topics</h5>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="settings-crypto" checked>
+                <label class="form-check-label" for="settings-crypto">
+                  Crypto
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="settings-web3" checked>
+                <label class="form-check-label" for="settings-web3">
+                  Web3
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="settings-politics" checked>
+                <label class="form-check-label" for="settings-politics">
+                  Politics
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h5>Content Style</h5>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="contentStyle" id="style-informative" value="informative" checked>
+                <label class="form-check-label" for="style-informative">
+                  Informative
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="contentStyle" id="style-casual" value="casual">
+                <label class="form-check-label" for="style-casual">
+                  Casual
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="contentStyle" id="style-professional" value="professional">
+                <label class="form-check-label" for="style-professional">
+                  Professional
+                </label>
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h5>Hashtags</h5>
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="include-hashtags" checked>
+                <label class="form-check-label" for="include-hashtags">
+                  Include hashtags in tweets
+                </label>
+              </div>
+              <div class="mb-3">
+                <label for="max-hashtags" class="form-label">Maximum number of hashtags</label>
+                <input type="number" class="form-control" id="max-hashtags" min="1" max="10" value="3">
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h5>Tweet Length</h5>
+              <div class="mb-3">
+                <label for="max-tweet-length" class="form-label">Maximum tweet length</label>
+                <input type="number" class="form-control" id="max-tweet-length" min="100" max="280" value="280">
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <button id="save-settings" class="btn btn-primary">
+                <i class="bi bi-save"></i> Save Settings
+              </button>
+              <button id="reset-settings" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset to Default
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Initialize tabs
+    document.addEventListener('DOMContentLoaded', function() {
+      const triggerTabList = [].slice.call(document.querySelectorAll('.nav-link'));
+      triggerTabList.forEach(function(triggerEl) {
+        const tabTrigger = new bootstrap.Tab(triggerEl);
+        
+        triggerEl.addEventListener('click', function(event) {
+          event.preventDefault();
+          tabTrigger.show();
+        });
+      });
+      
+      // Load initial data
+      loadSchedule();
+      loadPosts();
+      loadSettings();
+      
+      // Set up event listeners
+      document.getElementById('post-now-btn').addEventListener('click', postNow);
+      document.getElementById('save-quick-settings').addEventListener('click', saveQuickSettings);
+      document.getElementById('refresh-posts').addEventListener('click', loadPosts);
+      document.getElementById('apply-preset').addEventListener('click', applyPresetSchedule);
+      document.getElementById('apply-custom').addEventListener('click', applyCustomSchedule);
+      document.getElementById('save-settings').addEventListener('click', saveSettings);
+      document.getElementById('reset-settings').addEventListener('click', resetSettings);
+    });
+    
+    // API functions
+    async function fetchAPI(endpoint, method = 'GET', data = null) {
+      try {
+        const options = {
+          method,
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        };
+        
+        if (data) {
+          options.body = JSON.stringify(data);
+        }
+        
+        const response = await fetch(`/api/${endpoint}`, options);
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        return null;
+      }
+    }
+    
+    // Load schedule information
+    async function loadSchedule() {
+      const scheduleInfo = await fetchAPI('schedule');
+      
+      if (scheduleInfo) {
+        document.getElementById('current-schedule').textContent = scheduleInfo.readable;
+        
+        const scheduleTimesList = document.getElementById('schedule-times');
+        scheduleTimesList.innerHTML = '';
+        
+        scheduleInfo.nextRuns.forEach(time => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.textContent = new Date(time).toLocaleString();
+          scheduleTimesList.appendChild(li);
+        });
+        
+        // Update next posts on dashboard
+        const nextPostsList = document.getElementById('next-posts');
+        nextPostsList.innerHTML = '';
+        
+        scheduleInfo.nextRuns.slice(0, 3).forEach(time => {
+          const li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center';
+          li.innerHTML = `
+            <span>Scheduled Post</span>
+            <span>${new Date(time).toLocaleString()}</span>
+          `;
+          nextPostsList.appendChild(li);
+        });
+      }
+    }
+    
+    // Load post history
+    async function loadPosts() {
+      const posts = await fetchAPI('posts');
+      
+      if (posts) {
+        const postsHistoryDiv = document.getElementById('posts-history');
+        postsHistoryDiv.innerHTML = '';
+        
+        if (posts.length === 0) {
+          postsHistoryDiv.innerHTML = '<p>No posts yet.</p>';
+          return;
+        }
+        
+        posts.forEach(post => {
+          const postCard = document.createElement('div');
+          postCard.className = 'card tweet-card mb-3';
+          
+          const cardBody = document.createElement('div');
+          cardBody.className = 'card-body';
+          
+          const content = document.createElement('p');
+          content.className = 'mb-1';
+          content.textContent = post.content;
+          
+          const timestamp = document.createElement('p');
+          timestamp.className = 'tweet-timestamp mb-0';
+          timestamp.textContent = new Date(post.timestamp).toLocaleString();
+          
+          cardBody.appendChild(content);
+          cardBody.appendChild(timestamp);
+          postCard.appendChild(cardBody);
+          postsHistoryDiv.appendChild(postCard);
+        });
+        
+        // Update recent posts on dashboard
+        const recentPostsDiv = document.getElementById('recent-posts');
+        recentPostsDiv.innerHTML = '';
+        
+        posts.slice(0, 3).forEach(post => {
+          const postCard = document.createElement('div');
+          postCard.className = 'card tweet-card mb-3';
+          
+          const cardBody = document.createElement('div');
+          cardBody.className = 'card-body';
+          
+          const content = document.createElement('p');
+          content.className = 'mb-1';
+          content.textContent = post.content;
+          
+          const timestamp = document.createElement('p');
+          timestamp.className = 'tweet-timestamp mb-0';
+          timestamp.textContent = new Date(post.timestamp).toLocaleString();
+          
+          cardBody.appendChild(content);
+          cardBody.appendChild(timestamp);
+          postCard.appendChild(cardBody);
+          recentPostsDiv.appendChild(postCard);
+        });
+      }
+    }
+    
+    // Load settings
+    async function loadSettings() {
+      const settings = await fetchAPI('settings');
+      
+      if (settings) {
+        // Update topics
+        document.getElementById('settings-crypto').checked = settings.topics.crypto;
+        document.getElementById('settings-web3').checked = settings.topics.web3;
+        document.getElementById('settings-politics').checked = settings.topics.politics;
+        
+        // Update quick settings
+        document.getElementById('focus-crypto').checked = settings.topics.crypto;
+        document.getElementById('focus-web3').checked = settings.topics.web3;
+        document.getElementById('focus-politics').checked = settings.topics.politics;
+        
+        // Update content style
+        document.getElementById(`style-${settings.contentStyle}`).checked = true;
+        
+        // Update hashtags
+        document.getElementById('include-hashtags').checked = settings.includeHashtags;
+        document.getElementById('max-hashtags').value = settings.maxHashtags;
+        
+        // Update tweet length
+        document.getElementById('max-tweet-length').value = settings.maxTweetLength;
+      }
+    }
+    
+    // Post now
+    async function postNow() {
+      const button = document.getElementById('post-now-btn');
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Posting...';
+      
+      const result = await fetchAPI('posts', 'POST');
+      
+      if (result && result.message) {
+        alert('Tweet posted successfully!');
+        loadPosts();
+      } else {
+        alert('Failed to post tweet. Please check the logs.');
+      }
+      
+      button.disabled = false;
+      button.innerHTML = '<i class="bi bi-send"></i> Post Now';
+    }
+    
+    // Save quick settings
+    async function saveQuickSettings() {
+      const schedule = document.getElementById('quick-schedule').value;
+      
+      // Update schedule
+      const scheduleResult = await fetchAPI('schedule', 'PUT', { schedule });
+      
+      // Update topics
+      const settings = {
+        topics: {
+          crypto: document.getElementById('focus-crypto').checked,
+          web3: document.getElementById('focus-web3').checked,
+          politics: document.getElementById('focus-politics').checked
+        }
+      };
+      
+      const settingsResult = await fetchAPI('settings', 'PUT', settings);
+      
+      if (scheduleResult && settingsResult) {
+        alert('Settings saved successfully!');
+        loadSchedule();
+        loadSettings();
+      } else {
+        alert('Failed to save settings. Please try again.');
+      }
+    }
+    
+    // Apply preset schedule
+    async function applyPresetSchedule() {
+      const schedule = document.getElementById('schedule-preset').value;
+      const result = await fetchAPI('schedule', 'PUT', { schedule });
+      
+      if (result && result.success) {
+        alert('Schedule updated successfully!');
+        loadSchedule();
+      } else {
+        alert('Failed to update schedule. Please try again.');
+      }
+    }
+    
+    // Apply custom schedule
+    async function applyCustomSchedule() {
+      const schedule = document.getElementById('custom-schedule').value;
+      const result = await fetchAPI('schedule', 'PUT', { schedule });
+      
+      if (result && result.success) {
+        alert('Schedule updated successfully!');
+        loadSchedule();
+      } else {
+        alert('Failed to update schedule. Please check the cron expression and try again.');
+      }
+    }
+    
+    // Save settings
+    async function saveSettings() {
+      const settings = {
+        topics: {
+          crypto: document.getElementById('settings-crypto').checked,
+          web3: document.getElementById('settings-web3').checked,
+          politics: document.getElementById('settings-politics').checked
+        },
+        contentStyle: document.querySelector('input[name="contentStyle"]:checked').value,
+        includeHashtags: document.getElementById('include-hashtags').checked,
+        maxHashtags: parseInt(document.getElementById('max-hashtags').value),
+        maxTweetLength: parseInt(document.getElementById('max-tweet-length').value)
+      };
+      
+      const result = await fetchAPI('settings', 'PUT', settings);
+      
+      if (result && result.message) {
+        alert('Settings saved successfully!');
+        loadSettings();
+      } else {
+        alert('Failed to save settings. Please try again.');
+      }
+    }
+    
+    // Reset settings
+    async function resetSettings() {
+      if (confirm('Are you sure you want to reset all settings to default?')) {
+        const result = await fetchAPI('settings/reset', 'GET');
+        
+        if (result && result.message) {
+          alert('Settings reset to default!');
+          loadSettings();
+        } else {
+          alert('Failed to reset settings. Please try again.');
+        }
+      }
+    }
+  </script>
+</body>
+</html>
